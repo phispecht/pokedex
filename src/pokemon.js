@@ -14,24 +14,40 @@ var P = new Pokedex(options);
 let count = 1;
 let pokemons = [];
 let max = 16;
+let render = false;
 
 export default function Pokemon() {
     const [pokemon, setPokemon] = useState("");
+    const [url, setUrl] = useState("https://pokeapi.co/api/v2/pokemon/");
 
     useEffect(() => {
         (async () => {
-            const getPokemon = await axios.get(
-                "https://pokeapi.co/api/v2/pokemon/" + count
-            );
+            const getPokemon = await axios.get(url + count);
             setPokemon(getPokemon.data);
         })();
         pokemons.push(pokemon);
         if (pokemons.length <= max) {
             count++;
         }
+        render = true;
     }, [count]);
 
-    console.log("pokemons", pokemons);
+    /* console.log("pokemons", pokemons); */
+
+    const loadMore = () => {
+        axios
+            .get(url + "?offset=17&limit=16")
+            .then((res) => {
+                console.log("res:", res);
+                setPokemon(res.data.results[i]);
+                pokemons.push(pokemon);
+                console.log(pokemons);
+                console.log(i);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    };
 
     return (
         <>
@@ -51,7 +67,9 @@ export default function Pokemon() {
                     ))}
             </div>
             <div className="button-container">
-                <button className="button">More</button>
+                <button className="button" onClick={loadMore}>
+                    More
+                </button>
             </div>
         </>
     );
