@@ -1,62 +1,76 @@
 import React, { useEffect, useState } from "react";
-var Pokedex = require("pokedex-promise-v2");
 import axios from "axios";
 
-var options = {
-    protocol: "https",
-    hostName: "localhost:443",
-    versionPath: "/api/v2/",
-    cacheLimit: 100 * 1000,
-    timeout: 5 * 1000,
-};
-
-var P = new Pokedex(options);
 let count = 1;
 let pokemons = [];
-let max = 16;
-let render = false;
+let max = 15;
 
 export default function Pokemon() {
     const [pokemon, setPokemon] = useState("");
     const [url, setUrl] = useState("https://pokeapi.co/api/v2/pokemon/");
+    const [showModal, setShowModal] = useState(false);
+    const [showMoves, setShowMoves] = useState(false);
+
 
     useEffect(() => {
-        (async () => {
-            const getPokemon = await axios.get(url + count);
-            setPokemon(getPokemon.data);
-        })();
-        pokemons.push(pokemon);
+        axios.get(url + count)
+            .then(function(res){
+                setPokemon(res.data);
+            })
+            if(pokemon != ""){
+                pokemons.push(pokemon);
+            }
         if (pokemons.length <= max) {
             count++;
         }
-        render = true;
     }, [count]);
 
-    /* console.log("pokemons", pokemons); */
-
     const loadMore = () => {
-        axios
-            .get(url + "?offset=17&limit=16")
-            .then((res) => {
-                console.log("res:", res);
-                setPokemon(res.data.results[i]);
-                pokemons.push(pokemon);
-                console.log(pokemons);
-                console.log(i);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    };
+        for(let i = 17; i <= 33; i++){
+         axios.get(url + i)
+        .then(function(res){
+            setPokemon(res.data);
+            pokemons.push(res.data);
+        }).catch(function(err){
+            console.log(err);
+        })
+    }
+}
+
+    const showDetails = (e) => {
+        axios.get(url + e.currentTarget.id)
+        .then(function(res){
+            setPokemon(res.data);
+            console.log(pokemon);
+            setShowModal(true);
+        }).catch(function(err){
+            console.log(err);
+        })
+    }
+
+    const hideDetails = () => {
+        setShowModal(false);
+    }
+
+    const showMoveDetails = () => {
+        setShowMoves(true);
+    }
+
 
     return (
         <>
             <div className="pokemon-grid-container">
                 {pokemons.length != 0 &&
                     pokemons.map((element) => (
-                        <div className="pokemon-grid-child" key={element.id}>
+                        <div className="pokemon-grid-child" id={element.id} key={element.id} onClick={(e) => showDetails(e)}>
                             <span className="id">#{element.id}</span>
                             <span className="name">{element.name}</span>
+                            <div className="types">
+                                <span className="type">{element.types[0].type.name}</span>
+                            {element.types[1] &&
+                                <span className="type">{element.types[1].type.name}</span>
+                            }
+                            </div>
                             {element.sprites && (
                                 <div>
                                     <img src={element.sprites.front_default} />
@@ -71,6 +85,51 @@ export default function Pokemon() {
                     More
                 </button>
             </div>
+
+     {/* ------------------------MODAL-------------------------- */}
+
+            {showModal &&
+            <div className="pokemon-modal" >
+                            <span className="id">#{pokemon.id}</span>
+                            <span className="name">{pokemon.name}</span>
+                            <button className="buttonClose" onClick={hideDetails}>X</button>
+                            <button className="buttonMoves" onClick={showMoveDetails}>Moves</button>
+                            <div className="types">
+                                <span className="type">{pokemon.types[0].type.name}</span>
+                            {pokemon.types[1] &&
+                                <span className="type">{pokemon.types[1].type.name}</span>
+                            }
+                            </div>
+                                <div>
+                                    <img src={pokemon.sprites.front_default} />
+                                    <img src={pokemon.sprites.back_default} />
+                                </div>
+                                <div className="details">
+                                    <span className="detail">Height: {pokemon.height}</span>
+                                    <span className="detail">Weight: {pokemon.weight}</span>
+                                {pokemon.abilities.map((element) => (
+                                    <div className="abilities">
+                                        <span className="ability">Ability: {element.ability.name}</span>
+                                    </div>
+                                    ))}
+                                <table>
+                                    <tbody>
+                                        {pokemon.stats.map((element) => (
+                                            <tr><td>{element.stat.name}:</td><td className="stat_value">{element.base_stat}</td></tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                {showMoves &&
+                                <div className="moves">
+                                <h2>Moves</h2>
+                                    {pokemon.moves.map((element)=>(
+                                        <span className="move">{element.move.name}</span>
+                                    ))}
+                                </div>
+                                }
+                            </div>
+            </div>
+            }
         </>
     );
 }
