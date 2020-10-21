@@ -1,4 +1,4 @@
-#Pokedex
+# Pokedex
 
 This is a project, which was a challenge by honeypot. The challenge was to create a pokedex with 16 pokemons being loaded in the beginning.
 Features this project should also have are the following:
