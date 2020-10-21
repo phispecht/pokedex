@@ -8,7 +8,9 @@ let max = 15;
 export default function Pokemon() {
     const [pokemon, setPokemon] = useState("");
     const [url, setUrl] = useState("https://pokeapi.co/api/v2/pokemon/");
+    const [buttonText, setbuttonText] = useState("Moves");
     const [showModal, setShowModal] = useState(false);
+    const [showStats, setShowStats] = useState(true);
     const [showMoves, setShowMoves] = useState(false);
 
 
@@ -41,8 +43,10 @@ export default function Pokemon() {
         axios.get(url + e.currentTarget.id)
         .then(function(res){
             setPokemon(res.data);
-            console.log(pokemon);
             setShowModal(true);
+            setShowStats(true);
+            setbuttonText("Moves");
+            setShowMoves(false);
         }).catch(function(err){
             console.log(err);
         })
@@ -53,7 +57,15 @@ export default function Pokemon() {
     }
 
     const showMoveDetails = () => {
-        setShowMoves(true);
+        if(showMoves == false){
+            setShowMoves(true);
+            setShowStats(false);
+            setbuttonText("Stats");
+        }else{
+            setShowMoves(false);
+            setShowStats(true);
+            setbuttonText("Moves");
+        }
     }
 
 
@@ -93,7 +105,7 @@ export default function Pokemon() {
                             <span className="id">#{pokemon.id}</span>
                             <span className="name">{pokemon.name}</span>
                             <button className="buttonClose" onClick={hideDetails}>X</button>
-                            <button className="buttonMoves" onClick={showMoveDetails}>Moves</button>
+                            <button id="buttonMoves" onClick={showMoveDetails}>{buttonText}</button>
                             <div className="types">
                                 <span className="type">{pokemon.types[0].type.name}</span>
                             {pokemon.types[1] &&
@@ -104,6 +116,7 @@ export default function Pokemon() {
                                     <img src={pokemon.sprites.front_default} />
                                     <img src={pokemon.sprites.back_default} />
                                 </div>
+                                {showStats &&
                                 <div className="details">
                                     <span className="detail">Height: {pokemon.height}</span>
                                     <span className="detail">Weight: {pokemon.weight}</span>
@@ -119,15 +132,20 @@ export default function Pokemon() {
                                         ))}
                                     </tbody>
                                 </table>
-                                {showMoves &&
-                                <div className="moves">
-                                <h2>Moves</h2>
-                                    {pokemon.moves.map((element)=>(
-                                        <span className="move">{element.move.name}</span>
-                                    ))}
                                 </div>
                                 }
-                            </div>
+                                {showMoves &&
+                                <>
+                                <h2>Moves</h2>
+                                <div className="moves">
+                                <ul>
+                                    {pokemon.moves.map((element)=>(
+                                            <li><span className="move">{element.move.name}</span></li>
+                                    ))}
+                                </ul>
+                                </div>
+                                </>
+                                }
             </div>
             }
         </>
